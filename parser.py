@@ -1,5 +1,6 @@
 import urllib.request
 import xlrd
+import logging
 
 
 class AdministrativeUnit:
@@ -24,16 +25,31 @@ class Obwod(AdministrativeUnit):
         self.add_votes(votes)
 
 
+logger = logging.getLogger('parser')
 obwodas = []
 gminas = {}
 okragas = {}
-powiatas = {}
 voivodeships = {}
 politicians = []
 politicians_count = 12
+powiatas_to_voivoderships = {}
+
+
+def parse_voivodeships_to_powiatas():
+    bk = xlrd.open_workbook("data/voivodeships_to_powiatas.xls")
+    sh = bk.sheet_by_index(0)
+    for row_index in range(1, sh.nrows):
+        voivodeship = sh.cell_value(row_index, 1)
+        powiat = sh.cell_value(row_index, 0)
+        powiatas_to_voivoderships[powiat] = voivodeship
 
 
 def parse_obwody(sufix):
+    def update_administration_unit(set, unit_id, unit_name, sub_unit, votes):
+        if unit_id not in set:
+            set[unit_id] = AdministrativeUnit(unit_name)
+        set[unit_id].update(votes, sub_unit)
+
     filename = "data/%s" % sufix
     urllib.request.urlretrieve("http://prezydent2000.pkw.gov.pl/gminy/obwody/%s" % sufix, filename)
     bk = xlrd.open_workbook(filename)
@@ -50,22 +66,31 @@ def parse_obwody(sufix):
         obwod = Obwod(row[4], row[5], row[6], votes)
         obwodas.append(obwod)
 
+        okrag = row[0]
         gmina_code = row[1]
-        if gmina_code not in gminas:
-            gminas[gmina_code] = AdministrativeUnit(row[2])
-        gminas[gmina_code].update(votes, len(obwodas) - 1)
-
-        okrag_id = row[0]
-        if okrag_id not in okragas:
-            okragas[okrag_id] = AdministrativeUnit(okrag_id)
-        okragas[okrag_id].update(votes, gmina_code)
-
+        gmina_name = row[2]
         powiat = row[3]
-        if powiat not in powiatas:
-            powiatas[powiat] = AdministrativeUnit(powiat)
-        powiatas[powiat].update(votes, okrag_id)
+
+        if powiat in {'Zagranica', 'Statki morskie'}:
+            continue
+
+        voivodeship_name = powiatas_to_voivoderships[powiat]
+
+        update_administration_unit(gminas, gmina_code, gmina_name, len(obwodas) - 1, votes)
+        update_administration_unit(okragas, okrag, okrag, gmina_code, votes)
+        update_administration_unit(voivodeships, voivodeship_name, voivodeship_name, okrag, votes)
 
 
-parse_obwody("obw01.xls")
+def parse_all_obwody():
+    for i in range(1, 10):
+        logger.info("parse obwod number %d" % i)
+        parse_obwody("obw0%d.xls" % i)
+    for i in range(10, 69):
+        logger.info("parse obwod number %d" % i)
+        parse_obwody("obw%d.xls" % i)
 
-print(gminas)
+
+logging.basicConfig(level=logging.INFO)
+parse_voivodeships_to_powiatas()
+parse_all_obwody()
+print("koniec")
