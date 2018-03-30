@@ -43,7 +43,6 @@ env = Environment(
         loader=FileSystemLoader('template'),
         autoescape=select_autoescape(['html', 'xml'])
     )
-template = env.get_template('template.html')
 
 def parse_voivodeships_to_powiatas():
     bk = xlrd.open_workbook("data/voivodeships_to_powiatas.xls")
@@ -101,9 +100,10 @@ def parse_all_obwody():
 
 
 def create_single_page_from_template(subUnitPath, targetPath, unit,subUnitSet):
+    template = env.get_template(targetPath+'.html')
     subUnitSubSet = [subUnitSet[subUnit] for subUnit in unit.subUnits]
     htmlPage = template.render(subUnits=subUnitSubSet, subUnitPath=subUnitPath)
-    targetFileName = "result/%s%s.html" % (targetPath, unit.id)
+    targetFileName = "result/%s/%s.html" % (targetPath, unit.id)
     # if not os.path.exists(targetFileName):
     #     os.mknod(targetFileName)
 
@@ -111,13 +111,13 @@ def create_single_page_from_template(subUnitPath, targetPath, unit,subUnitSet):
         targetFile.write(htmlPage)
 def create_pages():
     for voivodeship in voivodeships.values():
-        create_single_page_from_template("okragas/","voivodeships/",voivodeship, okragas)
+        create_single_page_from_template("okragas/","voivodeships",voivodeship, okragas)
     for okrag in okragas.values():
-        create_single_page_from_template("gminas/","okragas/",okrag, gminas)
+        create_single_page_from_template("gminas/","okragas",okrag, gminas)
     for gmina in gminas.values():
-        create_single_page_from_template("obwodas/","gminas/",gmina, obwodas)
+        create_single_page_from_template("obwodas/","gminas",gmina, obwodas)
     for obwod in obwodas:
-        create_single_page_from_template("null", "obwodas/", obwod, [])
+        create_single_page_from_template("null", "obwodas", obwod, [])
 logging.basicConfig(level=logging.INFO)
 parse_voivodeships_to_powiatas()
 parse_all_obwody()
