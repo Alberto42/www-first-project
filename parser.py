@@ -1,7 +1,7 @@
 import urllib.request
 import xlrd
 import logging
-
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 class AdministrativeUnit:
     def __init__(self, name):
@@ -34,6 +34,11 @@ politicians = []
 politicians_count = 12
 powiatas_to_voivoderships = {}
 
+env = Environment(
+        loader=FileSystemLoader('template'),
+        autoescape=select_autoescape(['html', 'xml'])
+    )
+template = env.get_template('template.html')
 
 def parse_voivodeships_to_powiatas():
     bk = xlrd.open_workbook("data/voivodeships_to_powiatas.xls")
@@ -82,15 +87,23 @@ def parse_obwody(sufix):
 
 
 def parse_all_obwody():
-    for i in range(1, 10):
+    for i in range(1, 2):
         logger.info("parse obwod number %d" % i)
         parse_obwody("obw0%d.xls" % i)
-    for i in range(10, 69):
-        logger.info("parse obwod number %d" % i)
-        parse_obwody("obw%d.xls" % i)
+    # for i in range(10, 69):
+    #     logger.info("parse obwod number %d" % i)
+    #     parse_obwody("obw%d.xls" % i)
 
+
+# def create_single_page_from_template():
+#     pass
 
 logging.basicConfig(level=logging.INFO)
 parse_voivodeships_to_powiatas()
 parse_all_obwody()
-print("koniec")
+
+# print(gminas)
+print (template.render(units=list(gminas.values())))
+
+
+
