@@ -1,12 +1,17 @@
 import urllib.request
+
+import os
+
 import xlrd
 import logging
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 class AdministrativeUnit:
-    def __init__(self, name):
+    def __init__(self, name, id):
+        name = str(name)
         self.votes = [0 for i in range(politicians_count)]
         self.subUnits = set()
+        self.id = str(id)
         self.name = name
 
     def add_votes(self, votes):
@@ -18,8 +23,8 @@ class AdministrativeUnit:
 
 
 class Obwod(AdministrativeUnit):
-    def __init__(self, number, type, address, votes):
-        AdministrativeUnit.__init__(self, number)
+    def __init__(self, number, type, address, votes, id):
+        AdministrativeUnit.__init__(self, number, id)
         self.type = type
         self.address = address
         self.add_votes(votes)
@@ -52,7 +57,7 @@ def parse_voivodeships_to_powiatas():
 def parse_obwody(sufix):
     def update_administration_unit(set, unit_id, unit_name, sub_unit, votes):
         if unit_id not in set:
-            set[unit_id] = AdministrativeUnit(unit_name)
+            set[unit_id] = AdministrativeUnit(unit_name, unit_id)
         set[unit_id].update(votes, sub_unit)
 
     filename = "data/%s" % sufix
@@ -68,7 +73,7 @@ def parse_obwody(sufix):
         votes = sh.row_values(row_index, first_politician, last_politician)
         row = sh.row_values(row_index, 0, 7)
 
-        obwod = Obwod(row[4], row[5], row[6], votes)
+        obwod = Obwod(row[4], row[5], row[6], votes,len(obwodas))
         obwodas.append(obwod)
 
         okrag = row[0]
@@ -95,15 +100,30 @@ def parse_all_obwody():
     #     parse_obwody("obw%d.xls" % i)
 
 
-# def create_single_page_from_template():
-#     pass
+def create_single_page_from_template(subUnitPath, targetPath, unit,subUnitSet):
+    subUnitSubSet = [subUnitSet[subUnit] for subUnit in unit.subUnits]
+    htmlPage = template.render(subUnits=subUnitSubSet, subUnitPath=subUnitPath)
+    targetFileName = "result/%s%s.html" % (targetPath, unit.id)
+    # if not os.path.exists(targetFileName):
+    #     os.mknod(targetFileName)
 
+    with open(targetFileName, "w+") as targetFile:
+        targetFile.write(htmlPage)
+def create_pages():
+    for voivodeship in voivodeships.values():
+        create_single_page_from_template("okragas/","voivodeships/",voivodeship, okragas)
+    for okrag in okragas.values():
+        create_single_page_from_template("gminas/","okragas/",okrag, gminas)
+    for gmina in gminas.values():
+        create_single_page_from_template("obwodas/","gminas/",gmina, obwodas)
+    for obwod in obwodas:
+        create_single_page_from_template("null", "obwodas/", obwod, [])
 logging.basicConfig(level=logging.INFO)
 parse_voivodeships_to_powiatas()
 parse_all_obwody()
 
-# print(gminas)
-print (template.render(units=list(gminas.values())))
+create_pages()
+
 
 
 

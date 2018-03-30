@@ -5,8 +5,10 @@
     <title>Title</title>
 </head>
 <body>
-    {% for unit in units %}
-        {{ unit.name }}
+    <ul id="subUnits">
+    {% for unit in subUnits %}
+        <li><a href="../{{subUnitPath}}{{ unit.id }}.html">{{ unit.name }}</a></li>
     {% endfor %}
+    </ul>
 </body>
 </html>
