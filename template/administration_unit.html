@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="../js/Chart.bundle.js"></script>
+    <script src="../js/utils.js"></script>
+    <meta charset="UTF-8">
+    <style>
+        .canvas-holder {
+            width: 100%;
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        #chartjs-tooltip {
+            opacity: 1;
+            position: absolute;
+            background: rgba(0, 0, 0, .7);
+            color: white;
+            border-radius: 3px;
+            -webkit-transition: all .1s ease;
+            transition: all .1s ease;
+            pointer-events: none;
+            -webkit-transform: translate(-50%, 0);
+            transform: translate(-50%, 0);
+        }
+
+        .chartjs-tooltip-key {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin-right: 10px;
+        }
+
+        .label {
+            width: 33%;
+            margin-bottom: 10px;
+            float: left;
+        }
+
+        .bordered_element {
+            padding: 5px;
+            border: 1px solid black;
+        }
+
+        .propertyName {
+            float: left;
+            width: 35%;
+            font-weight: bold;
+
+        }
+
+        .propertyValue {
+            float: left;
+            width: 65%;
+        }
+        .centered {
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+{% block header %}
+{% endblock %}
+<div style="display: flex;">
+    <div style="width: 50%; float:left;">
+        <h1 style="text-align: center"> Wyniki wyborów w liczbie glosow</h1>
+        <div class="centered canvas-holder" style="width: 300px;">
+            <canvas id="chart-area" width="300" height="300" class="centered"></canvas>
+            <div id="chartjs-tooltip">
+                <table></table>
+            </div>
+        </div>
+    </div>
+    <div style="width: 50%; float:left;">
+        <h1 style="text-align: center"> Wyniki wyborów procentowe</h1>
+        <div class="centered canvas-holder" style="width: 300px;">
+            <canvas id="chart-area2" width="300" height="300" class="centered"></canvas>
+            <div id="chartjs-tooltip2">
+                <table></table>
+            </div>
+        </div>
+    </div>
+</div>
+{% block sub_units_footer %}
+{% endblock %}
+
+
+<script>
+    Chart.defaults.global.tooltips.custom = function (tooltip) {
+        // Tooltip Element
+        var tooltipEl = document.getElementById('chartjs-tooltip');
+
+        // Hide if no tooltip
+        if (tooltip.opacity === 0) {
+            tooltipEl.style.opacity = 0;
+            return;
+        }
+
+        // Set caret Position
+        tooltipEl.classList.remove('above', 'below', 'no-transform');
+        if (tooltip.yAlign) {
+            tooltipEl.classList.add(tooltip.yAlign);
+        } else {
+            tooltipEl.classList.add('no-transform');
+        }
+
+        function getBody(bodyItem) {
+            return bodyItem.lines;
+        }
+
+        // Set Text
+        if (tooltip.body) {
+            var titleLines = tooltip.title || [];
+            var bodyLines = tooltip.body.map(getBody);
+
+            var innerHtml = '<thead>';
+
+            titleLines.forEach(function (title) {
+                innerHtml += '<tr><th>' + title + '</th></tr>';
+            });
+            innerHtml += '</thead><tbody>';
+
+            bodyLines.forEach(function (body, i) {
+                var colors = tooltip.labelColors[i];
+                var style = 'background:' + colors.backgroundColor;
+                style += '; border-color:' + colors.borderColor;
+                style += '; border-width: 2px';
+                var span = '<span class="chartjs-tooltip-key" style="' + style + '"></span>';
+                var percentage = '';
+                var body_s = body.toString();
+                if (body_s.charAt(body_s.length-3) == '.' || body_s.charAt(body_s.length-2) == '.')
+                    percentage = ' %'
+                innerHtml += '<tr><td>' + span + body+percentage + '</td></tr>';
+            });
+            innerHtml += '</tbody>';
+
+            var tableRoot = tooltipEl.querySelector('table');
+            tableRoot.innerHTML = innerHtml;
+        }
+
+        var positionY = this._chart.canvas.offsetTop;
+        var positionX = this._chart.canvas.offsetLeft;
+
+        // Display, position, and set styles for font
+        tooltipEl.style.opacity = 1;
+        tooltipEl.style.left = positionX + tooltip.caretX + 'px';
+        tooltipEl.style.top = positionY + tooltip.caretY + 'px';
+        tooltipEl.style.fontFamily = tooltip._bodyFontFamily;
+        tooltipEl.style.fontSize = tooltip.bodyFontSize;
+        tooltipEl.style.fontStyle = tooltip._bodyFontStyle;
+        tooltipEl.style.padding = tooltip.yPadding + 'px ' + tooltip.xPadding + 'px';
+    };
+    var config = {
+            type: 'pie',
+            data: {
+                datasets: [{
+                    data: [
+                        {% for votes_count in unit.votes %}
+                        {{votes_count}},
+                        {% endfor %}
+                    ],
+                    backgroundColor: [
+                        '#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
+		  '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
+		  '#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A',
+                    ],
+                }],
+                labels: [
+                    {% for politician in politicians %}
+                    '{{politician}}',
+                    {% endfor %}
+                ]
+            },
+            options: {
+                responsive: true,
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    enabled: false,
+                }
+            }
+        };
+    var config2 = {
+            type: 'pie',
+            data: {
+                datasets: [{
+                    data: [
+                        {% for vote_percentage in unit.votes_percentage %}
+                        '{{vote_percentage|round(2,'common')}}',
+                        {% endfor %}
+                    ],
+                    backgroundColor: [
+                        '#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
+		  '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
+		  '#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A',
+                    ],
+                }],
+                labels: [
+                    {% for politician in politicians %}
+                    '{{politician}}',
+                    {% endfor %}
+                ]
+            },
+            options: {
+                responsive: true,
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    enabled: false,
+                }
+            }
+        };
+
+    window.onload = function () {
+        var ctx = document.getElementById('chart-area').getContext('2d');
+        new Chart(ctx, config);
+        ctx = document.getElementById('chart-area2').getContext('2d');
+        new Chart(ctx, config2);
+    };
+
+</script>
+</body>
+</html>

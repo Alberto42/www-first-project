@@ -1,15 +1,43 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-    <h1>Wyniki w {{ subUnitsNamePlural }}</h1>
-    <ul id="subUnits">
-    {% for unit in subUnits %}
-        <li><a href="../{{subUnitPath}}{{ unit.id }}.html">{{ unit.name }}</a></li>
-    {% endfor %}
-    </ul>
-</body>
-</html>
+{% extends "administration_unit.html" %}
+
+{% block title %}Wyniki dla obwodu nr. {{ unit.name }}{% endblock %}
+
+{% block header %}
+<div class="bordered_element">
+    <div class="label">
+        <div class="propertyName">
+            Gmina:
+        </div>
+        <div class="propertyValue">
+            {{unit.gmina}}
+        </div>
+    </div>
+    <div class="label">
+        <div class="propertyName">
+            Obwód nr.
+        </div>
+        <div class="propertyValue">
+            {{unit.name}}
+        </div>
+    </div>
+    <div class="label">
+        <div class="propertyName">
+            Typ obwodu:
+        </div>
+        <div class="propertyValue">
+            {{unit.type}}
+        </div>
+    </div>
+    <div class="label" style="float: none; display: table">
+        <div class="propertyName">
+            Adres:
+        </div>
+        <div class="propertyValue">
+            {{unit.address}}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block sub_units_footer %}
+{% endblock %}

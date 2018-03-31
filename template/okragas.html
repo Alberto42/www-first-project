@@ -1,15 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-    <h1>Wyniki w {{ subUnitsNamePlural }}</h1>
-    <ul id="subUnits">
+{% extends "administration_unit.html" %}
+
+{% block title %}Wyniki w okręgu nr. {{ unit.name }}{% endblock %}
+
+{% block header %}
+<div class="bordered_element" style="display: flex">
+    <div class="label">
+        <div class="propertyName">
+            Okrag nr.
+        </div>
+        <div class="propertyValue">
+            {{ unit.name }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block sub_units_footer %}
+<h1 style="text-align: center">Wyniki w gminach należących do tego okręgu:</h1>
+<ul id="subUnits" style="text-align: center">
     {% for unit in subUnits %}
-        <li><a href="../{{subUnitPath}}{{ unit.id }}.html">{{ unit.name }}</a></li>
+    <li><a href="../{{subUnitPath}}{{ unit.id }}.html">{{ unit.name }}</a></li>
     {% endfor %}
-    </ul>
-</body>
-</html>
+</ul>
+{% endblock %}

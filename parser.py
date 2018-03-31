@@ -24,11 +24,12 @@ class AdministrativeUnit:
 
 
 class Obwod(AdministrativeUnit):
-    def __init__(self, number, type, address, votes, id):
+    def __init__(self, number, type, address, votes, id, gmina):
         AdministrativeUnit.__init__(self, number, id)
         self.type = type
         self.address = address
         self.add_votes(votes)
+        self.gmina = gmina
 
 
 logger = logging.getLogger('parser')
@@ -84,13 +85,13 @@ def parse_obwody(sufix):
         votes = sh.row_values(row_index, first_politician, last_politician)
         row = sh.row_values(row_index, 0, 7)
 
-        obwod = Obwod(row[4], row[5], row[6], votes,len(obwodas))
-        obwodas.append(obwod)
-
         okrag = int(row[0])
         gmina_code = row[1]
         gmina_name = row[2]
         powiat = row[3]
+
+        obwod = Obwod(int(row[4]), row[5], row[6], votes,len(obwodas), gmina_name)
+        obwodas.append(obwod)
 
         if powiat in {'Zagranica', 'Statki morskie'}:
             continue
