@@ -35,7 +35,20 @@ obwodas = []
 gminas = {}
 okragas = {}
 voivodeships = {}
-politicians = []
+politicians = [
+                'Dariusz Maciej Grabowski',
+                'Piotr Ikonowicz',
+                'Jarosław Kalinowski',
+                'Janusz Korwin-Mikke',
+                'Marian Krzaklewski',
+                'Aleksander Kwaśniewski',
+                'Andrzej Lepper',
+                'Jan Łopuszański',
+                'Andrzej Marian Olechowski',
+                'Bogdan Pawłowski',
+                'Lech Wałęsa',
+                'Tadeusz Adam Wilecki',
+                ]
 politicians_count = 12
 powiatas_to_voivoderships = {}
 
@@ -65,8 +78,6 @@ def parse_obwody(sufix):
     sh = bk.sheet_by_index(0)
 
     first_politician, last_politician = 12, 24
-    global politicians
-    politicians = sh.row_values(0, first_politician, last_politician)
 
     for row_index in range(1, sh.nrows):
         votes = sh.row_values(row_index, first_politician, last_politician)
@@ -102,7 +113,10 @@ def parse_all_obwody():
 def create_single_page_from_template(subUnitPath, targetPath, unit,subUnitSet):
     template = env.get_template(targetPath+'.html')
     subUnitSubSet = [subUnitSet[subUnit] for subUnit in unit.subUnits]
-    htmlPage = template.render(subUnits=subUnitSubSet, subUnitPath=subUnitPath)
+    htmlPage = template.render(subUnits=subUnitSubSet,
+                               subUnitPath=subUnitPath,
+                               unit=unit,
+                               politicians=politicians)
     targetFileName = "result/%s/%s.html" % (targetPath, unit.id)
     # if not os.path.exists(targetFileName):
     #     os.mknod(targetFileName)
