@@ -4,3 +4,4 @@ rm result/okragas/*
 rm result/voivodeships/*
 rm data/*
 rm result/*
+rm result/js/*
