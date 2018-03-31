@@ -13,6 +13,7 @@ class AdministrativeUnit:
         self.subUnits = set()
         self.id = str(id)
         self.name = name
+        self.votes_percentage = []
 
     def add_votes(self, votes):
         self.votes = [self.votes[i] + votes[i] for i in range(politicians_count)]
@@ -132,10 +133,18 @@ def create_pages():
         create_single_page_from_template("obwodas/","gminas",gmina, obwodas)
     for obwod in obwodas:
         create_single_page_from_template("null", "obwodas", obwod, [])
+
+def calc_percentage_votes_for_all_units():
+    all_units = set.union(set(gminas.values()), set(okragas.values()), set(voivodeships.values()), set(obwodas))
+    for unit in all_units:
+        sum_of_votes = sum(unit.votes)
+        for vote in unit.votes:
+            unit.votes_percentage.append((vote / sum_of_votes) * 100)
+
 logging.basicConfig(level=logging.INFO)
 parse_voivodeships_to_powiatas()
 parse_all_obwody()
-
+calc_percentage_votes_for_all_units()
 create_pages()
 
 

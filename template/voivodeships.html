@@ -5,7 +5,7 @@
     <script src="../js/utils.js"></script>
     <meta charset="UTF-8">
     <style>
-        #canvas-holder {
+        .canvas-holder {
             width: 100%;
             margin-top: 50px;
             text-align: center;
@@ -74,7 +74,7 @@
 <div style="display: flex;">
     <div style="width: 50%; float:left;">
         <h1 style="text-align: center"> Wyniki wyborów w liczbie glosow</h1>
-        <div id="canvas-holder" class="centered" style="width: 300px;">
+        <div class="centered canvas-holder" style="width: 300px;">
             <canvas id="chart-area" width="300" height="300" class="centered"></canvas>
             <div id="chartjs-tooltip">
                 <table></table>
@@ -83,8 +83,11 @@
     </div>
     <div style="width: 50%; float:left;">
         <h1 style="text-align: center"> Wyniki wyborów procentowe</h1>
-        <div class="bordered_element" style="height: 400px">
-
+        <div class="centered canvas-holder" style="width: 300px;">
+            <canvas id="chart-area2" width="300" height="300" class="centered"></canvas>
+            <div id="chartjs-tooltip2">
+                <table></table>
+            </div>
         </div>
     </div>
 </div>
@@ -137,7 +140,11 @@
                 style += '; border-color:' + colors.borderColor;
                 style += '; border-width: 2px';
                 var span = '<span class="chartjs-tooltip-key" style="' + style + '"></span>';
-                innerHtml += '<tr><td>' + span + body + '</td></tr>';
+                var percentage = '';
+                var body_s = body.toString();
+                if (body_s.charAt(body_s.length-3) == '.' || body_s.charAt(body_s.length-2) == '.')
+                    percentage = ' %'
+                innerHtml += '<tr><td>' + span + body+percentage + '</td></tr>';
             });
             innerHtml += '</tbody>';
 
@@ -188,11 +195,45 @@
                 }
             }
         };
+    var config2 = {
+            type: 'pie',
+            data: {
+                datasets: [{
+                    data: [
+                        {% for vote_percentage in unit.votes_percentage %}
+                        '{{vote_percentage|round(2,'common')}}',
+                        {% endfor %}
+                    ],
+                    backgroundColor: [
+                        '#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
+		  '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
+		  '#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A',
+                    ],
+                }],
+                labels: [
+                    {% for politician in politicians %}
+                    '{{politician}}',
+                    {% endfor %}
+                ]
+            },
+            options: {
+                responsive: true,
+                legend: {
+                    display: false
+                },
+                tooltips: {
+                    enabled: false,
+                }
+            }
+        };
 
     window.onload = function () {
         var ctx = document.getElementById('chart-area').getContext('2d');
-        window.myPie = new Chart(ctx, config);
+        new Chart(ctx, config);
+        ctx = document.getElementById('chart-area2').getContext('2d');
+        new Chart(ctx, config2);
     };
+
 </script>
 </body>
 </html>
