@@ -106,21 +106,21 @@
             type: 'pie',
             data: {
                 datasets: [{
-                    data: [300, 50, 100, 40, 10],
+                    data: [
+                        {% for votes_count in unit.votes %}
+                        {{votes_count}},
+                        {% endfor %}
+                    ],
                     backgroundColor: [
-                        window.chartColors.red,
-                        window.chartColors.orange,
-                        window.chartColors.yellow,
-                        window.chartColors.green,
-                        window.chartColors.blue,
+                        '#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
+		  '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
+		  '#80B300', '#809900', '#E6B3B3', '#6680B3', '#66991A',
                     ],
                 }],
                 labels: [
-                    'Red',
-                    'Orange',
-                    'Yellow',
-                    'Green',
-                    'Blue'
+                    {% for politician in politicians %}
+                    '{{politician}}',
+                    {% endfor %}
                 ]
             },
             options: {
