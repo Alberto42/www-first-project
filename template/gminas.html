@@ -19,7 +19,7 @@
 <h1 style="text-align: center">Wyniki w obwodach:</h1>
 <ul id="subUnits" style="text-align: center">
     {% for unit in subUnits %}
-    <li><a href="../{{subUnitPath}}{{ unit.id }}.html">{{ unit.name }}</a></li>
+    <li><a href="../{{subUnitPath}}{{ unit.id }}.html">Obwod nr. {{ unit.name }}</a></li>
     {% endfor %}
 </ul>
 {% endblock %}

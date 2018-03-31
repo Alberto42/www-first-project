@@ -2,6 +2,8 @@ import urllib.request
 
 import os
 
+from shutil import copyfile
+
 import xlrd
 import logging
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -52,7 +54,7 @@ politicians = [
                 'Tadeusz Adam Wilecki',
                 ]
 politicians_count = 12
-powiatas_to_voivoderships = {}
+powiatas_to_voivodeships = {}
 
 env = Environment(
         loader=FileSystemLoader('template'),
@@ -60,12 +62,12 @@ env = Environment(
     )
 
 def parse_voivodeships_to_powiatas():
-    bk = xlrd.open_workbook("data/voivodeships_to_powiatas.xls")
+    bk = xlrd.open_workbook("resources/voivodeships_to_powiatas.xls")
     sh = bk.sheet_by_index(0)
     for row_index in range(1, sh.nrows):
         voivodeship = sh.cell_value(row_index, 1)
         powiat = sh.cell_value(row_index, 0)
-        powiatas_to_voivoderships[powiat] = voivodeship
+        powiatas_to_voivodeships[powiat] = voivodeship
 
 
 def parse_obwody(sufix):
@@ -96,7 +98,7 @@ def parse_obwody(sufix):
         if powiat in {'Zagranica', 'Statki morskie'}:
             continue
 
-        voivodeship_name = powiatas_to_voivoderships[powiat]
+        voivodeship_name = powiatas_to_voivodeships[powiat]
 
         update_administration_unit(gminas, gmina_code, gmina_name, len(obwodas) - 1, votes)
         update_administration_unit(okragas, okrag, okrag, gmina_code, votes)
@@ -104,24 +106,23 @@ def parse_obwody(sufix):
 
 
 def parse_all_obwody():
-    for i in range(1, 2):
+    for i in range(1, 10):
         logger.info("parse obwod number %d" % i)
         parse_obwody("obw0%d.xls" % i)
-    # for i in range(10, 69):
-    #     logger.info("parse obwod number %d" % i)
-    #     parse_obwody("obw%d.xls" % i)
+    for i in range(10, 69):
+        logger.info("parse obwod number %d" % i)
+        parse_obwody("obw%d.xls" % i)
 
 
 def create_single_page_from_template(subUnitPath, targetPath, unit,subUnitSet):
     template = env.get_template(targetPath+'.html')
     subUnitSubSet = [subUnitSet[subUnit] for subUnit in unit.subUnits]
+    subUnitSubSet.sort(key=lambda x: int(x.name) if x.name.isdigit() else x.name)
     htmlPage = template.render(subUnits=subUnitSubSet,
                                subUnitPath=subUnitPath,
                                unit=unit,
                                politicians=politicians)
     targetFileName = "result/%s/%s.html" % (targetPath, unit.id)
-    # if not os.path.exists(targetFileName):
-    #     os.mknod(targetFileName)
 
     with open(targetFileName, "w+") as targetFile:
         targetFile.write(htmlPage)
@@ -140,13 +141,17 @@ def calc_percentage_votes_for_all_units():
     for unit in all_units:
         sum_of_votes = sum(unit.votes)
         for vote in unit.votes:
-            unit.votes_percentage.append((vote / sum_of_votes) * 100)
+            unit.votes_percentage.append((vote / sum_of_votes if sum_of_votes != 0 else 0) * 100)
+def copy_resources():
+    os.system('cp resources/js/* result/js')
+    os.system('cp resources/* result')
 
 logging.basicConfig(level=logging.INFO)
 parse_voivodeships_to_powiatas()
 parse_all_obwody()
 calc_percentage_votes_for_all_units()
 create_pages()
+copy_resources()
 
 
 
