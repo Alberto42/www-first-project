@@ -17,7 +17,7 @@
 
 {% block sub_units_footer %}
 <h1 style="text-align: center">Wyniki w gminach należących do tego okręgu:</h1>
-<ul id="subUnits" style="text-align: center">
+<ul id="subUnits" class="list">
     {% for unit in subUnits %}
     <li><a href="../{{subUnitPath}}{{ unit.id }}.html">{{ unit.name }}</a></li>
     {% endfor %}
