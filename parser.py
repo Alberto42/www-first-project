@@ -69,7 +69,7 @@ def parse_relations_between_voivodeships_and_okragas():
     sh = bk.sheet_by_index(0)
     voivodeship = "null"
     okragas_to_voivodeships.append('null')
-    for row_index in range(8, sh.nrows):
+    for row_index in range(7, sh.nrows):
         potential_voivodeship = sh.cell_value(row_index, 1)
         okrag = sh.cell_value(row_index, 0)
         if okrag == 'województwo':
