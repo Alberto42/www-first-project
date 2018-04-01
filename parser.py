@@ -56,7 +56,7 @@ politicians = [
 ]
 
 politicians_count = 12
-powiatas_to_voivodeships = {}
+okragas_to_voivodeships = []
 
 env = Environment(
     loader=FileSystemLoader('html'),
@@ -64,13 +64,18 @@ env = Environment(
 )
 
 
-def parse_relations_between_voivodeships_and_powiatas():
-    bk = xlrd.open_workbook("resources/voivodeships_to_powiatas.xls")
+def parse_relations_between_voivodeships_and_okragas():
+    bk = xlrd.open_workbook("resources/zal2.xls")
     sh = bk.sheet_by_index(0)
-    for row_index in range(1, sh.nrows):
-        voivodeship = sh.cell_value(row_index, 1)
-        powiat = sh.cell_value(row_index, 0)
-        powiatas_to_voivodeships[powiat] = voivodeship
+    voivodeship = "null"
+    okragas_to_voivodeships.append('null')
+    for row_index in range(8, sh.nrows):
+        potential_voivodeship = sh.cell_value(row_index, 1)
+        okrag = sh.cell_value(row_index, 0)
+        if okrag == 'województwo':
+            voivodeship = potential_voivodeship
+        else:
+            okragas_to_voivodeships.append(voivodeship.lower())
 
 
 def parse_single_file(sufix):
@@ -98,10 +103,7 @@ def parse_single_file(sufix):
         obwod = Obwod(int(row[4]), row[5], row[6], votes, len(obwodas), gmina_name)
         obwodas.append(obwod)
 
-        if powiat in {'Zagranica', 'Statki morskie'}:
-            continue
-
-        voivodeship_name = powiatas_to_voivodeships[powiat]
+        voivodeship_name = okragas_to_voivodeships[okrag]
 
         update_administration_unit(gminas, gmina_code, gmina_name, len(obwodas) - 1, votes)
         update_administration_unit(okragas, okrag, okrag, gmina_code, votes)
@@ -163,7 +165,7 @@ def copy_resources():
 
 logging.basicConfig(level=logging.INFO)
 
-parse_relations_between_voivodeships_and_powiatas()
+parse_relations_between_voivodeships_and_okragas()
 download_and_parse_all_data()
 
 calc_percentage_votes_for_all_units()
