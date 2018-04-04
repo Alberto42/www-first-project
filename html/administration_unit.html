@@ -66,11 +66,24 @@
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
-{% block header %}
-{% endblock %}
+<div class="bordered_element" style="display: flow-root">
+     {% block header %}
+    {% endblock %}
+    {% for number,type in additional_information %}
+        <div class="label">
+            <div class="propertyName">
+                {{type}}
+            </div>
+            <div class="propertyValue">
+                {{number}}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
 <div style="display: flex;">
     <div style="width: 50%; float:left;">
-        <h1 style="text-align: center"> Wyniki wyborów w liczbie glosow</h1>
+        <h1 style="text-align: center"> Wyniki wyborów w liczbie głosów</h1>
         <div class="centered canvas-holder" style="width: 300px;">
             <canvas id="chart-area" width="300" height="300" class="centered"></canvas>
             <div id="chartjs-tooltip">
@@ -162,7 +175,7 @@
             data: {
                 datasets: [{
                     data: [
-                        {% for votes_count in unit.votes %}
+                        {% for votes_count in unit.get_votes() %}
                         {{votes_count}},
                         {% endfor %}
                     ],

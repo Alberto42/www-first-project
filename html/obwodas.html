@@ -3,38 +3,36 @@
 {% block title %}Wyniki dla obwodu nr. {{ unit.name }}{% endblock %}
 
 {% block header %}
-<div class="bordered_element">
-    <div class="label">
-        <div class="propertyName">
-            Gmina:
-        </div>
-        <div class="propertyValue">
-            {{unit.gmina}}
-        </div>
+<div class="label">
+    <div class="propertyName">
+        Gmina:
     </div>
-    <div class="label">
-        <div class="propertyName">
-            Obwód nr.
-        </div>
-        <div class="propertyValue">
-            {{unit.name}}
-        </div>
+    <div class="propertyValue">
+        {{unit.gmina}}
     </div>
-    <div class="label">
-        <div class="propertyName">
-            Typ obwodu:
-        </div>
-        <div class="propertyValue">
-            {{unit.type}}
-        </div>
+</div>
+<div class="label">
+    <div class="propertyName">
+        Obwód nr.
     </div>
-    <div class="label" style="float: none; display: table">
-        <div class="propertyName">
-            Adres:
-        </div>
-        <div class="propertyValue">
-            {{unit.address}}
-        </div>
+    <div class="propertyValue">
+        {{unit.name}}
+    </div>
+</div>
+<div class="label">
+    <div class="propertyName">
+        Typ obwodu:
+    </div>
+    <div class="propertyValue">
+        {{unit.type}}
+    </div>
+</div>
+<div class="label">
+    <div class="propertyName">
+        Adres:
+    </div>
+    <div class="propertyValue">
+        {{unit.address}}
     </div>
 </div>
 {% endblock %}

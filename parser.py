@@ -10,18 +10,22 @@ from jinja2 import Environment, FileSystemLoader, select_autoescape
 class AdministrativeUnit:
     def __init__(self, name, id):
         name = str(name)
-        self.votes = [0 for i in range(politicians_count)]
+        self.votes = [0 for i in range(vote_columns_count)]
         self.subUnits = set()
         self.id = str(id)
         self.name = name
         self.votes_percentage = []
 
     def add_votes(self, votes):
-        self.votes = [self.votes[i] + votes[i] for i in range(politicians_count)]
+        self.votes = [self.votes[i] + votes[i] for i in range(vote_columns_count)]
 
     def update(self, votes, subUnit):
         self.add_votes(votes)
         self.subUnits.add(subUnit)
+    def get_votes(self):
+        return self.votes[5:]
+    def get_additional_information(self):
+        return [int(i) for i in self.votes[:4] ]
 
 
 class Obwod(AdministrativeUnit):
@@ -54,8 +58,15 @@ politicians = [
     'Lech Wałęsa',
     'Tadeusz Adam Wilecki',
 ]
+additional_information_names = [
+    'Uprawnieni',
+    'Wydane karty',
+    'Głosy oddane',
+    'Głosy nieważne',
+    'Głosy ważne',
+]
 
-politicians_count = 12
+vote_columns_count = 17
 okragas_to_voivodeships = []
 
 env = Environment(
@@ -89,10 +100,10 @@ def parse_single_file(sufix):
     bk = xlrd.open_workbook(filename)
     sh = bk.sheet_by_index(0)
 
-    first_politician, last_politician = 12, 24
+    first_vote_column, last_politician = 7, 24
 
     for row_index in range(1, sh.nrows):
-        votes = sh.row_values(row_index, first_politician, last_politician)
+        votes = sh.row_values(row_index, first_vote_column, last_politician)
         row = sh.row_values(row_index, 0, 7)
 
         okrag = int(row[0])
@@ -111,12 +122,12 @@ def parse_single_file(sufix):
 
 
 def download_and_parse_all_data():
-    for i in range(1, 10):
+    for i in range(1, 2):
         logger.info("parse obwod number %d" % i)
         parse_single_file("obw0%d.xls" % i)
-    for i in range(10, 69):
-        logger.info("parse obwod number %d" % i)
-        parse_single_file("obw%d.xls" % i)
+    # for i in range(10, 69):
+    #     logger.info("parse obwod number %d" % i)
+    #     parse_single_file("obw%d.xls" % i)
 
 
 def create_single_page_from_template(subUnitPath, targetPath, unit, subUnitSet):
@@ -128,7 +139,8 @@ def create_single_page_from_template(subUnitPath, targetPath, unit, subUnitSet):
     htmlPage = template.render(subUnits=subUnitSubSet,
                                subUnitPath=subUnitPath,
                                unit=unit,
-                               politicians=politicians)
+                               politicians=politicians,
+                               additional_information=zip(unit.get_additional_information(), additional_information_names))
 
     targetFileName = "result/%s/%s.html" % (targetPath, unit.id)
 
@@ -152,8 +164,8 @@ def calc_percentage_votes_for_all_units():
     logger.info("calc percentage votes")
     all_units = set.union(set(gminas.values()), set(okragas.values()), set(voivodeships.values()), set(obwodas))
     for unit in all_units:
-        sum_of_votes = sum(unit.votes)
-        for vote in unit.votes:
+        sum_of_votes = sum(unit.get_votes())
+        for vote in unit.get_votes():
             unit.votes_percentage.append((vote / sum_of_votes if sum_of_votes != 0 else 0) * 100)
 
 
