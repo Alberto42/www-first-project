@@ -122,12 +122,12 @@ def parse_single_file(sufix):
 
 
 def download_and_parse_all_data():
-    for i in range(1, 2):
+    for i in range(1, 10):
         logger.info("parse obwod number %d" % i)
         parse_single_file("obw0%d.xls" % i)
-    # for i in range(10, 69):
-    #     logger.info("parse obwod number %d" % i)
-    #     parse_single_file("obw%d.xls" % i)
+    for i in range(10, 69):
+        logger.info("parse obwod number %d" % i)
+        parse_single_file("obw%d.xls" % i)
 
 
 def create_single_page_from_template(subUnitPath, targetPath, unit, subUnitSet):
